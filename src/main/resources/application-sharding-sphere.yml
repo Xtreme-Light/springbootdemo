@@ -1,0 +1,48 @@
+spring:
+  shardingsphere:
+    props:
+      # 这里的其它属性，参考： https://shardingsphere.apache.org/document/5.0.0/cn/user-manual/shardingsphere-jdbc/configuration/props/
+      # 打印 SQL
+      sql-show: true
+      # 在程序启动和更新时，是否检查重复表。
+      check-duplicate-table-enabled: false
+    # 数据源
+    datasource:
+      # 配置真实数据源
+      names: ds0,ds1
+      # 配置第 1 个数据源
+      ds0:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://127.0.0.1:3306/demo_ds_0?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8
+        username: root
+        password: 123456
+      ds1:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://127.0.0.1:3306/demo_ds_1?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8
+        username: root
+        password: 123456
+    rules:
+      sharding:
+        # 绑定表规则列表,不配置也可以，若配置了，在tables下一定要配规则，否则直接启动报错
+        binding-tables: t_user,t_goods
+        default-database-strategy:
+          hint:
+            sharding-algorithm-name: hint_force
+        # 表规则配置
+        tables:
+          #具体表名-商品基本信息表
+          t_user:
+            actual-data-nodes: ds$->{0..1}.t_user
+            # 配置分库策略
+            database-strategy:
+              hint:
+                sharding-algorithm-name: hint_force
+          t_goods:
+            # 实际数据库节点
+            actual-data-nodes: ds$->{0..1}.t_goods
+        # 自定义算法在这里申明
+        sharding-algorithms:
+          hint_force:
+            type: "HINT_FORCE"
