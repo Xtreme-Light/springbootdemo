@@ -36,12 +36,16 @@ spring:
           t_user:
             actual-data-nodes: ds$->{0..1}.t_user
             # 配置分库策略
-            database-strategy:
-              hint:
-                sharding-algorithm-name: hint_force
+#            database-strategy:
+#              hint:
+#                sharding-algorithm-name: hint_force
           t_goods:
             # 实际数据库节点
             actual-data-nodes: ds$->{0..1}.t_goods
+            # 配置分库策略
+#            database-strategy:
+#              hint:
+#                sharding-algorithm-name: hint_force
         # 自定义算法在这里申明
         sharding-algorithms:
           hint_force:

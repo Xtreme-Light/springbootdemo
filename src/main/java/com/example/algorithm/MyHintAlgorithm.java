@@ -3,10 +3,13 @@ package com.example.algorithm;
 import java.util.Collection;
 import org.apache.shardingsphere.sharding.api.sharding.hint.HintShardingAlgorithm;
 import org.apache.shardingsphere.sharding.api.sharding.hint.HintShardingValue;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
-public class MyHintAlgorithm implements HintShardingAlgorithm<String> {
+public class MyHintAlgorithm implements HintShardingAlgorithm<String> , ApplicationContextAware {
 
-
+  private ApplicationContext applicationContext;
 
   @Override
   public void init() {
@@ -27,8 +30,13 @@ public class MyHintAlgorithm implements HintShardingAlgorithm<String> {
   @Override
   public Collection<String> doSharding(Collection<String> collection,
       HintShardingValue<String> hintShardingValue) {
-    System.out.println("获取到hintShardingValue： " + hintShardingValue);
-    System.out.println("获取到collection： " + collection);
-    return collection;
+    final ISpringBootBaseDataSourceAlgorithm bean = applicationContext.getBean(
+        ISpringBootBaseDataSourceAlgorithm.class);
+    return bean.determineDataSource(collection,hintShardingValue);
+  }
+
+  @Override
+  public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    this.applicationContext = applicationContext;
   }
 }
