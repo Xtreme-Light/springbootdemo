@@ -26,7 +26,7 @@ spring:
     rules:
       sharding:
         # 绑定表规则列表,不配置也可以，若配置了，在tables下一定要配规则，否则直接启动报错
-        binding-tables: t_user,t_goods
+        binding-tables: t_user,t_goods,user
         default-database-strategy:
           hint:
             sharding-algorithm-name: hint_force
@@ -46,6 +46,8 @@ spring:
 #            database-strategy:
 #              hint:
 #                sharding-algorithm-name: hint_force
+          user:
+            actual-data-nodes: ds$->{0..1}.user
         # 自定义算法在这里申明
         sharding-algorithms:
           hint_force:

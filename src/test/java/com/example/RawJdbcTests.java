@@ -1,5 +1,6 @@
 package com.example;
 
+import com.example.holder.HintContextHolder;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class SpringbootShardingSphereDemoApplicationTests {
+class RawJdbcTests {
 
   @Autowired
   private DataSource dataSource;
@@ -122,6 +123,48 @@ class SpringbootShardingSphereDemoApplicationTests {
   }
 
   /**
+   * 直接切换数据源有效
+   * @throws SQLException
+   */
+  @Test
+  void test5() throws SQLException {
+    try(final HintManager instance = HintManager.getInstance()) {
+      instance.setDataSourceName("ds1");
+      try (
+          final Connection connection = dataSource.getConnection();
+          final PreparedStatement preparedStatement = connection.prepareStatement(
+              "select id,standalone from t_stand_alone");
+      ) {
+        final ResultSet resultSet = preparedStatement.executeQuery();
+        while (resultSet.next()) {
+          final String string = resultSet.getString(2);
+          System.out.println(string);
+        }
+      }
+    }
+  }
+  /**
+   * 通过算法尝试，无效
+   * @throws SQLException
+   */
+  @Test
+  void test6() throws SQLException {
+    try(final HintManager instance = HintManager.getInstance()) {
+      instance.setDatabaseShardingValue("ds1");
+      try (
+          final Connection connection = dataSource.getConnection();
+          final PreparedStatement preparedStatement = connection.prepareStatement(
+              "select id,standalone from t_stand_alone");
+      ) {
+        final ResultSet resultSet = preparedStatement.executeQuery();
+        while (resultSet.next()) {
+          final String string = resultSet.getString(2);
+          System.out.println(string);
+        }
+      }
+    }
+  }
+  /**
    * 仅查询2库数据 通过指定的算法规则计算
    */
   @Test
@@ -143,6 +186,61 @@ class SpringbootShardingSphereDemoApplicationTests {
       } catch (SQLException throwables) {
         throwables.printStackTrace();
       }
+    }
+  }
+
+  @Test
+  void test4HintShardingValueContextHolder() {
+    final HintContextHolder hintContextHolder = new HintContextHolder();
+    generateDsQuery();
+    hintContextHolder.pushDatabaseShardingValue("ds1");
+    nestedDsQuery();
+    hintContextHolder.poll();
+    generateDsQuery();
+    hintContextHolder.clear();
+  }
+  @Test
+  void test4HintShardingValueContextHolder2() {
+    final HintContextHolder hintContextHolder = new HintContextHolder();
+    hintContextHolder.pushDatabaseShardingValue("ds1");
+    generateDsQuery();
+    hintContextHolder.poll();
+    hintContextHolder.pushDatabaseShardingValue("ds0");
+    nestedDsQuery();
+    hintContextHolder.poll();
+    hintContextHolder.pushDatabaseShardingValue("ds1");
+    generateDsQuery();
+    hintContextHolder.clear();
+
+  }
+  void nestedDsQuery() {
+    try (
+        final Connection connection = dataSource.getConnection();
+        final PreparedStatement preparedStatement = connection.prepareStatement(
+            "select id,name from t_user");
+    ) {
+      final ResultSet resultSet = preparedStatement.executeQuery();
+      while (resultSet.next()) {
+        final String string = resultSet.getString(2);
+        System.out.println(string);
+      }
+    } catch (SQLException throwables) {
+      throwables.printStackTrace();
+    }
+  }
+  void generateDsQuery() {
+    try (
+        final Connection connection = dataSource.getConnection();
+        final PreparedStatement preparedStatement = connection.prepareStatement(
+            "select id,name from t_user");
+    ) {
+      final ResultSet resultSet = preparedStatement.executeQuery();
+      while (resultSet.next()) {
+        final String string = resultSet.getString(2);
+        System.out.println(string);
+      }
+    } catch (SQLException throwables) {
+      throwables.printStackTrace();
     }
   }
 }

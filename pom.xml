@@ -17,6 +17,7 @@
   <properties>
     <java.version>11</java.version>
     <shardingsphere.version>5.1.0</shardingsphere.version>
+    <mybatis.plus.version>3.5.1</mybatis.plus.version>
   </properties>
   <dependencies>
     <!--切面-->
@@ -24,6 +25,12 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-aop</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.baomidou</groupId>
+      <artifactId>mybatis-plus-boot-starter</artifactId>
+      <version>${mybatis.plus.version}</version>
+    </dependency>
+
     <dependency>
       <groupId>org.apache.shardingsphere</groupId>
       <artifactId>shardingsphere-jdbc-core-spring-boot-starter</artifactId>
